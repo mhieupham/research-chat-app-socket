@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
   const userId = socket.handshake.auth.user_id;
-  const room = socket.handshake.auth.room;
+  let room = '';
   const userName = socket.handshake.auth.user_name;
 
   socket.broadcast.emit('user-join', {
@@ -50,8 +50,19 @@ io.on('connection', (socket) => {
   })
 
   socket.on('join-room', (data) => {
+    room = data.room;
     socket.join(data.room);
     io.to(room).emit('join-room', {
+      user_id: userId,
+      user_name: userName,
+      room: data.room
+    });
+  })
+
+  socket.on('left-room', (data) => {
+    room = data.room;
+    socket.leave(data.room);
+    io.to(room).emit('left-room', {
       user_id: userId,
       user_name: userName,
       room: data.room
